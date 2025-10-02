@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * This is the provided NumberTriangle class to be used in this coding task.
@@ -88,8 +89,17 @@ public class NumberTriangle {
      *
      */
     public int retrieve(String path) {
-        // TODO implement this method
-        return -1;
+        NumberTriangle cur = this;
+        while (path.length() != 0) {
+            if (path.charAt(0) == 'l') {
+                cur = cur.left;
+            }
+            else if (path.charAt(0) == 'r') {
+                cur = cur.right;
+            }
+            path = path.substring(1);
+        }
+        return cur.getRoot();
     }
 
     /** Read in the NumberTriangle structure from a file.
@@ -110,19 +120,41 @@ public class NumberTriangle {
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
 
-        // TODO define any variables that you want to use to store things
 
-        // will need to return the top of the NumberTriangle,
-        // so might want a variable for that.
-        NumberTriangle top = null;
+        ArrayList<NumberTriangle> prev_layer = new ArrayList<>();
+
+        // cur[0] links to prev[0].left
+        // cur[last] links to prev[last].right
+        // 0 < x < last
+        // cur[x] links to prev[x - 1].right and prev[x].left
 
         String line = br.readLine();
+        NumberTriangle top =  new NumberTriangle(Integer.parseInt(line));
+        prev_layer.add(top);
+        line = br.readLine();
+
         while (line != null) {
 
-            // remove when done; this line is included so running starter code prints the contents of the file
-            System.out.println(line);
+            ArrayList<Integer> cur_ints = Converter.line_to_ints(line);
+            ArrayList<NumberTriangle> cur_layer = Converter.ints_to_triangle(cur_ints);
 
-            // TODO process the line
+            // link in first
+            NumberTriangle first_t = cur_layer.get(0);
+            prev_layer.get(0).setLeft(first_t);
+
+            // link in last
+            NumberTriangle last_t = cur_layer.get(cur_ints.size() - 1);
+            prev_layer.get(prev_layer.size() - 1).setRight(last_t);
+
+            // link in 1 to last - 1
+            for (int i = 1; i < cur_layer.size() - 1; i++) {
+                NumberTriangle curr = cur_layer.get(i);
+                prev_layer.get(i - 1).setRight(curr);
+                prev_layer.get(i).setLeft(curr);
+
+            }
+
+            prev_layer = cur_layer;
 
             //read the next line
             line = br.readLine();
@@ -140,5 +172,27 @@ public class NumberTriangle {
         // Problem 18 from project Euler [not for credit]
         mt.maxSumPath();
         System.out.println(mt.getRoot());
+    }
+
+}
+
+class Converter {
+    public static ArrayList<Integer> line_to_ints (String line){
+        ArrayList<Integer> ret = new ArrayList<>();
+        String[] strings = line.split(" ");
+        for (String s: strings){
+            int x =  Integer.parseInt(s);
+            ret.add(x);
+        }
+        return ret;
+    }
+
+    public static ArrayList<NumberTriangle> ints_to_triangle (ArrayList<Integer> ints){
+        ArrayList<NumberTriangle> ret = new ArrayList<>();
+        for (Integer i: ints) {
+            NumberTriangle triangle = new NumberTriangle(i);
+            ret.add(triangle);
+        }
+        return ret;
     }
 }
