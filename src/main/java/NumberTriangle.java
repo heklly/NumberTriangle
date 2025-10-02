@@ -193,7 +193,6 @@ class Converter {
             NumberTriangle triangle = new NumberTriangle(i);
             ret.add(triangle);
         }
-
         return ret;
     }
 }
